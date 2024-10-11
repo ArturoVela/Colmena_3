@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todos los Usuarios</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Lista de Usuarios</h2>
+        <table class="table table-striped" id="userTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre de Usuario</th>
+                    <th>Correo Electrónico</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se insertarán los usuarios dinámicamente -->
+            </tbody>
+        </table>
+        <div id="responseMessage" class="mt-3"></div>
+    </div>
+
+    <script>
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/usuarios/all');
+                if (response.ok) {
+                    const users = await response.json();
+                    const userTable = document.getElementById("userTable").getElementsByTagName('tbody')[0];
+                    userTable.innerHTML = "";
+                    users.forEach(user => {
+                        const row = userTable.insertRow();
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.role}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Eliminar</button>
+                            </td>
+                        `;
+                    });
+                } else {
+                    document.getElementById("responseMessage").innerHTML = '<div class="alert alert-danger">Error al obtener los usuarios.</div>';
+                }
+            } catch (error) {
+                document.getElementById("responseMessage").innerHTML = '<div class="alert alert-danger">Error de conexión.</div>';
+            }
+        }
+
+        async function deleteUser(userId) {
+            try {
+                const response = await fetch(`/usuarios/${userId}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    document.getElementById("responseMessage").innerHTML = '<div class="alert alert-success">Usuario eliminado con éxito.</div>';
+                    fetchUsers(); // Refresca la lista de usuarios
+                } else {
+                    document.getElementById("responseMessage").innerHTML = '<div class="alert alert-danger">Error al eliminar el usuario.</div>';
+                }
+            } catch (error) {
+                document.getElementById("responseMessage").innerHTML = '<div class="alert alert-danger">Error de conexión.</div>';
+            }
+        }
+
+        // Llama a la función para obtener los usuarios al cargar la página
+        document.addEventListener("DOMContentLoaded", fetchUsers);
+    </script>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
